@@ -55,7 +55,58 @@ export default class DbService {
     async init(): Promise<void> {
         try {
             await this.connectToDB(); // Connect to DB before initializing
-            // Your table creation queries here...
+            
+            await this.query(`
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    age INT NOT NULL,
+                    email VARCHAR(255) NOT NULL UNIQUE,
+                    password VARCHAR(255) NOT NULL,
+                    role VARCHAR(255) NOT NULL
+                )
+            `);
+
+            await this.query(`
+                CREATE TABLE IF NOT EXISTS relations (
+                    id SERIAL PRIMARY KEY,
+                    user_id_1 INT NOT NULL FOREIGN KEY REFERENCES users(id),
+                    user_id_2 INT NOT NULL FOREIGN KEY REFERENCES users(id)
+                )
+            `);
+
+            await this.query(`
+                CREATE TABLE IF NOT EXISTS chat_room (
+                    id SERIAL PRIMARY KEY,
+                    user_id INT NOT NULL FOREIGN KEY REFERENCES users(id),
+                    message VARCHAR(255) NOT NULL,
+                    time_sent TIMESTAMP NOT NULL,
+                    seen BOOLEAN NOT NULL
+                )
+            `);
+
+            await this.query(`
+                CREATE TABLE IF NOT EXISTS organiser_profile_page (
+                    user_id INT NOT NULL FOREIGN KEY REFERENCES users(id),
+                    desc VARCHAR(255) NOT NULL,
+                    rating INT NOT NULL,
+                    comments VARCHAR(255) NOT NULL
+                )
+            `);
+
+            await this.query(`
+                CREATE TABLE IF NOT EXISTS class (
+                    id SERIAL PRIMARY KEY,
+                    organiser_id INT NOT NULL FOREIGN KEY REFERENCES organiser_profile_page(user_id),
+                    time TIMESTAMP NOT NULL,
+                    price INT NOT NULL,
+                    booked BOOLEAN NOT NULL,
+                    booked_user_id INT
+                )
+            `);
+
+            console.log("Database initialized successfully");
+
         } catch (error) {
             console.error("Error initializing database:", error);
             throw error; // Rethrow the error for the caller to handle
