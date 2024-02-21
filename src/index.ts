@@ -1,12 +1,22 @@
 import express from 'express';
+import DbService from './service/db_service';
+import dotenv from 'dotenv';
 
-const app = express();
+class App{
 
-app.get('/', (req, res) => {
-    res.send('das World');
-});
+    public app: express.Application;
+    public dbService: DbService;
 
+    constructor(){
+        dotenv.config();
+        this.app = express();
+        this.dbService = new DbService();
+    }
 
-app.listen(3000, () => {
-  console.log(`server running on port 4000`);
-}); 
+    public listen(){
+        this.app.listen(3000, () => {
+            console.log('Server is running on port 3000');
+        });
+    }
+
+}

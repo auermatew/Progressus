@@ -5,6 +5,12 @@ export default class DbService {
 
     constructor() {
         this.init();
+        this.ping = this.ping.bind(this);
+        this.query = this.query.bind(this);
+        this.init = this.init.bind(this);
+        this.connectToDB = this.connectToDB.bind(this);
+        this.disconnectFromDB = this.disconnectFromDB.bind(this);
+        this.checkClient = this.checkClient.bind(this);
     }
 
     async ping(): Promise<any> {
@@ -64,45 +70,51 @@ export default class DbService {
                     email VARCHAR(255) NOT NULL UNIQUE,
                     password VARCHAR(255) NOT NULL,
                     role VARCHAR(255) NOT NULL
-                )
+                );
             `);
 
             await this.query(`
-                CREATE TABLE IF NOT EXISTS relations (
+               CREATE TABLE IF NOT EXISTS relations (
                     id SERIAL PRIMARY KEY,
-                    user_id_1 INT NOT NULL FOREIGN KEY REFERENCES users(id),
-                    user_id_2 INT NOT NULL FOREIGN KEY REFERENCES users(id)
-                )
+                    user_id_1 INT NOT NULL,
+                    user_id_2 INT NOT NULL,
+                    FOREIGN KEY (user_id_1) REFERENCES users(id),
+                    FOREIGN KEY (user_id_2) REFERENCES users(id)
+                );
             `);
 
             await this.query(`
                 CREATE TABLE IF NOT EXISTS chat_room (
                     id SERIAL PRIMARY KEY,
-                    user_id INT NOT NULL FOREIGN KEY REFERENCES users(id),
+                    user_id INT NOT NULL,
                     message VARCHAR(255) NOT NULL,
                     time_sent TIMESTAMP NOT NULL,
-                    seen BOOLEAN NOT NULL
-                )
+                    seen BOOLEAN NOT NULL,
+                    FOREIGN KEY (user_id) REFERENCES users(id)
+                );
             `);
 
             await this.query(`
                 CREATE TABLE IF NOT EXISTS organiser_profile_page (
-                    user_id INT NOT NULL FOREIGN KEY REFERENCES users(id),
-                    desc VARCHAR(255) NOT NULL,
+                    user_id INT NOT NULL,
+                    description VARCHAR(255) NOT NULL,
                     rating INT NOT NULL,
-                    comments VARCHAR(255) NOT NULL
-                )
+                    comments VARCHAR(255) NOT NULL,
+                    FOREIGN KEY (user_id) REFERENCES users(id)
+                );
             `);
 
             await this.query(`
                 CREATE TABLE IF NOT EXISTS class (
                     id SERIAL PRIMARY KEY,
-                    organiser_id INT NOT NULL FOREIGN KEY REFERENCES organiser_profile_page(user_id),
+                    user_id INT NOT NULL,
                     time TIMESTAMP NOT NULL,
                     price INT NOT NULL,
                     booked BOOLEAN NOT NULL,
-                    booked_user_id INT
-                )
+                    booked_user_id INT,
+                    FOREIGN KEY (user_id) REFERENCES users(id),
+                    FOREIGN KEY (booked_user_id) REFERENCES users(id)
+                );
             `);
 
             console.log("Database initialized successfully");
