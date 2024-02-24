@@ -97,7 +97,7 @@ class User {
 	public get role(): string | null  {
 		return this._role;
 	}
-
+    
     /**
      * Setter role
      * @param {string } value
