@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 class App{
     public app: express.Application;
     public dbService: DbService;
-    private port: number;
+    public port: number;
 
     constructor(){
         dotenv.config();

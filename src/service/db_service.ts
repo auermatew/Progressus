@@ -4,13 +4,13 @@ export default class DbService {
     client: Client | undefined;
 
     constructor() {
-        this.init();
+        this.init = this.init.bind(this);
         this.ping = this.ping.bind(this);
         this.query = this.query.bind(this);
-        this.init = this.init.bind(this);
         this.connectToDB = this.connectToDB.bind(this);
         this.disconnectFromDB = this.disconnectFromDB.bind(this);
         this.checkClient = this.checkClient.bind(this);
+        this.init();
     }
 
     async ping(): Promise<any> {
@@ -47,6 +47,8 @@ export default class DbService {
 
     async query(query: string, params?: any[]): Promise<any> {
         try {
+            await this.connectToDB()
+
             const client = await this.checkClient();
             console.log("Executing query:", query, params);
             const result = await client.query(query, params);
@@ -55,6 +57,9 @@ export default class DbService {
         } catch (error) {
             console.error("Error executing query:", error);
             throw error; // Rethrow the error for the caller to handle
+        }
+        finally {
+            await this.disconnectFromDB();
         }
     }
 
