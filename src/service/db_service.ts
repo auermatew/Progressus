@@ -65,8 +65,6 @@ export default class DbService {
 
     async init(): Promise<void> {
         try {
-            await this.connectToDB(); // Connect to DB before initializing
-            
             await this.query(`
                 CREATE TABLE IF NOT EXISTS users (
                     id SERIAL PRIMARY KEY,
@@ -127,9 +125,6 @@ export default class DbService {
         } catch (error) {
             console.error("Error initializing database:", error);
             throw error; // Rethrow the error for the caller to handle
-        }
-        finally {
-            await this.disconnectFromDB(); // Disconnect from DB after initializing
         }
     }
 }
