@@ -1,33 +1,23 @@
 import { Client } from 'ts-postgres';
 
 export default class DbService {
-    client: Client | undefined;
+    static client: Client | undefined;
 
-    constructor() {
-        this.init = this.init.bind(this);
-        this.ping = this.ping.bind(this);
-        this.query = this.query.bind(this);
-        this.connectToDB = this.connectToDB.bind(this);
-        this.disconnectFromDB = this.disconnectFromDB.bind(this);
-        this.checkClient = this.checkClient.bind(this);
-        this.init();
-    }
-
-    async ping(): Promise<any> {
+    static async ping(): Promise<any> {
         console.log("Pinging the database...");
         const res = await this.query('SELECT NOW()');
         console.log("Database pinged successfully:", res);
         return res;
     }
 
-    private async checkClient(): Promise<Client> {
-        if (!this.client) {
-            throw new Error("Database client is undefined");
+    static async checkClient(): Promise<Client> {
+        if (this.client) {
+            return this.client;
+        } else {
+            throw new Error("Database client is not connected");
         }
-        return this.client;
     }
-
-    private async connectToDB(): Promise<void> {
+    static async connectToDB(): Promise<void> {
         console.log("Connecting to the database...");
         this.client = new Client({
             host: process.env.DB_HOST || 'localhost',
@@ -39,13 +29,15 @@ export default class DbService {
         await this.client.connect();
     }
 
-    private async disconnectFromDB(): Promise<void> {
-        const client = await this.checkClient();
+    static async disconnectFromDB(): Promise<void> {
         console.log("Disconnecting from the database...");
-        await client.end();
+        if (this.client) {
+            await this.client.end();
+            this.client = undefined;
+        }
     }
 
-    async query(query: string, params?: any[]): Promise<any> {
+    static async query(query: string, params?: any[]): Promise<any> {
         try {
             await this.connectToDB()
 
@@ -63,7 +55,7 @@ export default class DbService {
         }
     }
 
-    async init(): Promise<void> {
+    static async init(): Promise<void> {
         try {
             await this.connectToDB(); // Connect to DB before initializing
             
